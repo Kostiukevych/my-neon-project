@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Дмитро | GlassHUD Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes neonBorderCycle {
+            0%, 100% { border-color: #00f2ff; box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); }
+            33% { border-color: #bf00ff; box-shadow: 0 0 15px rgba(191, 0, 255, 0.3); }
+            66% { border-color: #00ff66; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
+        }
+
+        :root {
+            --neon-cyan: #00f2ff;
+            --neon-glow: rgba(0, 242, 255, 0.5);
+            --neon-glow-strong: rgba(0, 242, 255, 0.8);
+            --neon-purple: #bf00ff;
+            --glass-bg: rgba(20, 30, 50, 0);
+            --glass-border: rgba(0, 242, 255, 0.35);
+            --glass-border-strong: rgba(0, 242, 255, 0.7);
+            --text-light: #f0f3ff;
+            --text-dim: #a0b0d0;
+            --glass-opacity: 0;
+            --transition-smooth: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        body {
+            font-family: 'Space Grotesk', 'Orbitron', 'Exo 2', monospace;
+            background: radial-gradient(ellipse at 20% 30%, #0a0f1a, #020408);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            color: #fff;
+            transition: background-image 1s ease-in-out;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, rgba(0, 242, 255, 0.01) 0px, rgba(0, 242, 255, 0.01) 1px, transparent 1px, transparent 60px),
+                repeating-linear-gradient(90deg, rgba(0, 242, 255, 0.01) 0px, rgba(0, 242, 255, 0.01) 1px, transparent 1px, transparent 60px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 10% 20%, #fff, rgba(0,0,0,0)),
+                radial-gradient(1.5px 1.5px at 25% 45%, #fff, rgba(0,0,0,0)),
+                radial-gradient(2.5px 2.5px at 45% 70%, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 70% 30%, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 85% 80%, #fff, rgba(0,0,0,0));
+            background-repeat: no-repeat;
+            background-size: 350px 350px, 450px 450px, 550px 550px, 400px 400px, 500px 500px;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            animation: starsFloat 50s linear infinite;
+        }
+
+        @keyframes starsFloat {
+            from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+            to { background-position: 200px 200px, 300px 300px, 400px 400px, 250px 250px, 350px 350px; }
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            min-height: 100vh;
+            position: relative;
+            z-index: 3;
+        }
+
+        .glass-panel {
+            position: relative;
+            background: rgba(20, 30, 50, var(--glass-opacity)) !important;
+            backdrop-filter: blur(calc(var(--glass-opacity) * 20px)) saturate(180%);
+            border-radius: 48px;
+            padding: 2rem;
+            margin: 0 auto;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: none !important;
+            transition: var(--transition-smooth);
+            animation: neonBorderCycle 2s linear infinite;
+        }
+
+        .glass-card {
+            position: relative;
+            background: rgba(20, 30, 50, var(--glass-opacity)) !important;
+            backdrop-filter: blur(calc(var(--glass-opacity) * 16px)) saturate(180%);
+            border-radius: 32px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: none !important;
+            transition: var(--transition-smooth);
+            animation: neonBorderCycle 2s linear infinite;
+        }
+
+        .glass-panel .glass-card {
+            border-width: 1px;
+            margin: 1rem 0;
+        }
+
+        .photo-card {
+            background: rgba(20, 35, 55, var(--glass-opacity));
+            backdrop-filter: blur(calc(var(--glass-opacity) * 12px));
+            border-radius: 24px;
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            transition: var(--transition-smooth);
+        }
+
+        .photo-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--glass-border-strong);
+            box-shadow: 0 0 25px var(--neon-glow);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 18px;
+        }
+
+        .photo-grid {
+            display: none;
+        }
+
+        .media-element {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 0 20px var(--neon-glow);
+            transition: var(--transition-smooth);
+        }
+
+        .media-element:hover {
+            transform: scale(1.02);
+            border-color: var(--glass-border-strong);
+            box-shadow: 0 0 35px var(--neon-glow-strong);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 60px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.7rem 2rem;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 2px;
+            border-radius: 50px;
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        .tab-btn::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0%;
+            height: 2px;
+            background: var(--neon-cyan);
+            transition: var(--transition-smooth);
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .tab-btn:hover::before, .tab-btn.active::before {
+            width: 80%;
+        }
+
+        .tab-btn.active {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 15px var(--neon-cyan);
+            background: rgba(0, 242, 255, 0.08);
+        }
+
+        .page { display: none; animation: fadeIn 0.6s ease; }
+        .page.active-page { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .logo h1 { font-size: 2rem; letter-spacing: 8px; background: linear-gradient(135deg, #fff, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; background-clip: text; color: transparent; font-family: 'Orbitron', monospace; }
+        .logo p { font-size: 0.7rem; letter-spacing: 3px; color: var(--text-dim); }
+
+        .hero-section { text-align: center; margin-bottom: 2rem; }
+        .hero-section h2 { font-size: 2.5rem; background: linear-gradient(125deg, #ffffff, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 1rem; font-family: 'Orbitron', monospace; }
+        .personal-greeting { font-size: 1.1rem; color: var(--neon-cyan); margin-bottom: 0.5rem; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-cyan); }
+        .hero-sub { color: var(--text-dim); }
+
+        .frame-content { display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: center; }
+        .text-content p { font-size: 1rem; line-height: 1.6; color: var(--text-light); }
+
+        .donate-wrapper { text-align: center; margin: 2rem 0 1.5rem; }
+        .donate-button {
+            display: inline-block;
+            background: linear-gradient(115deg, rgba(0, 242, 255, 0.15), rgba(0, 0, 0, 0.3));
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            padding: 1rem 2.5rem;
+            text-decoration: none;
+            font-family: 'Orbitron', monospace;
+            backdrop-filter: blur(8px);
+            transition: var(--transition-smooth);
+            box-shadow: 0 0 25px var(--neon-glow);
+            border-radius: 50px;
+        }
+        .donate-button:hover {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            color: #000;
+            box-shadow: 0 0 50px var(--neon-cyan);
+            transform: scale(1.03);
+        }
+
+        footer { margin-top: 2rem; text-align: center; font-size: 0.65rem; color: #666; letter-spacing: 3px; }
+
+        .floating-widget { 
+            position: fixed; 
+            bottom: 25px; 
+            left: 25px; 
+            z-index: 10000; 
+        }
+        
+        .widget-button {
+            width: 65px; 
+            height: 65px;
+            background: #00f2ff;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px var(--neon-cyan);
+            transition: all 0.3s ease;
+            animation: neonPulse 1.5s ease-in-out infinite;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .widget-button img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 20px var(--neon-cyan); transform: scale(1); }
+            50% { box-shadow: 0 0 50px var(--neon-cyan), 0 0 20px var(--neon-purple); transform: scale(1.05); }
+        }
+        
+        .widget-button:hover { 
+            transform: scale(1.1); 
+            animation: none; 
+            box-shadow: 0 0 60px var(--neon-cyan); 
+        }
+
+        .glass-window {
+            position: fixed;
+            bottom: 100px;
+            left: 20px;
+            width: 450px;
+            height: 580px;
+            background: rgba(10, 18, 35, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 40px;
+            z-index: 9999;
+            box-shadow: 0 0 60px rgba(0, 242, 255, 0.25);
+            border: 1px solid var(--glass-border-strong);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .glass-window.active { display: flex; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .window-header {
+            background: linear-gradient(135deg, rgba(0, 242, 255, 0.15), rgba(191, 0, 255, 0.15));
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', monospace;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .window-body { flex: 1; overflow-y: auto; padding: 18px; }
+        .tab-content { display: none; height: 100%; }
+        .tab-content.active { display: block; }
+
+        .window-tabs {
+            display: flex;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px;
+            gap: 5px;
+        }
+        .window-tabs button {
+            flex: 1;
+            background: rgba(0, 242, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            color: var(--neon-cyan);
+            padding: 10px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition-smooth);
+        }
+        .window-tabs button:hover, .window-tabs button.active {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        .bot-avatar { text-align: center; margin-bottom: 20px; }
+        .bot-avatar video { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--neon-cyan); object-fit: cover; }
+        .bot-message {
+            background: rgba(0, 242, 255, 0.08);
+            padding: 14px;
+            border-radius: 24px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--neon-cyan);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-light);
+        }
+        .bot-answers { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+        .bot-answer-btn {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-family: 'Orbitron', monospace;
+            transition: var(--transition-smooth);
+        }
+        .bot-answer-btn:hover { background: var(--neon-cyan); color: #000; transform: translateY(-2px); }
+
+        .bot-input-area { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .bot-input-area input {
+            background: rgba(0, 242, 255, 0.08);
+            border: 1px solid var(--glass-border);
+            padding: 10px 14px;
+            border-radius: 30px;
+            color: #fff;
+            outline: none;
+        }
+        .bot-input-area button {
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            border: none;
+            padding: 10px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+        }
+
+        .chat-status { margin-bottom: 12px; font-size: 0.75rem; color: var(--neon-cyan); text-align: center; }
+        .chat-input-group { margin-bottom: 15px; }
+        .chat-input-group label { display: block; font-size: 0.7rem; color: var(--neon-cyan); margin-bottom: 6px; }
+        .chat-input-field, .chat-textarea {
+            width: 100%;
+            background: rgba(0, 242, 255, 0.06);
+            border: 1px solid var(--glass-border);
+            padding: 12px;
+            border-radius: 20px;
+            color: #fff;
+            outline: none;
+        }
+        .send-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            transition: var(--transition-smooth);
+        }
+        .send-btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px var(--neon-cyan); }
+
+        .settings-group { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border); }
+        .settings-group h4 { color: var(--neon-cyan); margin-bottom: 15px; font-size: 0.75rem; letter-spacing: 3px; }
+        .lang-grid, .music-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        /* Стили для кнопок с флагами */
+        .lang-btn-settings {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-family: 'Orbitron', monospace;
+            transition: var(--transition-smooth);
+            min-width: 50px;
+        }
+        
+        .music-track-btn {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 6px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .lang-btn-settings:hover, .music-track-btn:hover,
+        .lang-btn-settings.active, .music-track-btn.active-track {
+            background: var(--neon-cyan);
+            color: #000;
+        }
+        .opacity-slider { width: 100%; margin: 12px 0; accent-color: var(--neon-cyan); }
+
+        .hud-frame-custom {
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(20, 30, 50, var(--glass-opacity)) !important;
+            backdrop-filter: blur(calc(var(--glass-opacity) * 20px));
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: none !important;
+            transition: var(--transition-smooth);
+            animation: neonBorderCycle 2s linear infinite;
+        }
+
+        .social-glass-grid {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .glass-icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 50px;
+            background: rgba(0, 242, 255, 0.05);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 25px;
+            transition: var(--transition-smooth);
+            animation: neonBorderCycle 2s linear infinite;
+            text-decoration: none;
+            color: var(--neon-cyan);
+            font-size: 24px;
+        }
+
+        .glass-icon-btn i {
+            transition: var(--transition-smooth);
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+
+        .glass-icon-btn:hover {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .glass-icon-btn:hover i {
+            color: #000 !important;
+            text-shadow: none;
+        }
+
+        .neon-glitch-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-glow);
+            margin-bottom: 1.5rem;
+            font-size: 1.4rem;
+        }
+        
+        .description-body p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: var(--text-light);
+        }
+        
+        .description-body strong {
+            color: var(--neon-cyan);
+        }
+
+        @media (max-width: 700px) {
+            .app-container { padding: 1rem; }
+            .glass-panel { padding: 1.2rem; border-radius: 32px; }
+            .hero-section h2 { font-size: 1.6rem; }
+            .glass-window { width: 340px; left: 10px; bottom: 100px; height: 520px; }
+            .widget-button { width: 55px; height: 55px; }
+            .tab-btn { padding: 0.5rem 1.2rem; font-size: 0.85rem; }
+            .hud-frame-custom { padding: 1rem; }
+            .glass-icon-btn { width: 90px; height: 40px; font-size: 18px; }
+            .lang-btn-settings { font-size: 1rem; min-width: 40px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="floating-widget">
+    <div class="widget-button" id="openWindowBtn">
+        <img src="bot_static.png" alt="AI">
+    </div>
+</div>
+
+<div id="glassWindow" class="glass-window">
+    <div class="window-header">
+        <span id="windowHeaderText">🧠 HUD INTERFACE</span>
+        <button class="close-window" id="closeWindowBtn" style="background:none; border:none; color:#00f2ff; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+    <div class="window-body">
+        <div id="botTab" class="tab-content active">
+            <div class="bot-avatar">
+                <video preload="metadata" id="botVideo" loop muted playsinline>
+                    <source src="bot_animated.mp4" type="video/mp4">
+                </video>
+            </div>
+            <div id="botMessage" class="bot-message">Привіт, мене звати Віїзі...</div>
+            <div id="botAnswers" class="bot-answers"></div>
+            <div id="botInputArea" class="bot-input-area" style="display: none;">
+                <input type="email" id="botEmailInput" placeholder="Ваш Email для відповіді...">
+                <input type="text" id="wishInput" placeholder="Напиши побажання Дмитру...">
+                <button id="sendWishBtn">📡 ВІДПРАВИТИ</button>
+            </div>
+        </div>
+        <div id="chatTab" class="tab-content">
+            <div id="chatStatus" class="chat-status"></div>
+            <div class="chat-input-group"><label id="chatEmailLabel">📧 EMAIL ДЛЯ ВІДПОВІДІ</label><input type="email" id="userEmail" class="chat-input-field" placeholder="your@email.com"></div>
+            <div class="chat-input-group"><label id="chatMessageLabel">💬 ПОВІДОМЛЕННЯ</label><textarea id="userMessage" class="chat-textarea" rows="4" placeholder="Введіть повідомлення для Дмитра..."></textarea></div>
+            <button class="send-btn" id="sendChatBtn">📡 ВІДПРАВИТИ</button>
+        </div>
+        <div id="settingsTab" class="tab-content">
+            <div class="settings-group"><h4 id="langSettingsTitle">🌐 МОВА / LANGUAGE</h4><div class="lang-grid" id="langGrid">
+                <button data-lang="uk" class="lang-btn-settings active">🇺🇦</button>
+                <button data-lang="en" class="lang-btn-settings">🇬🇧</button>
+                <button data-lang="de" class="lang-btn-settings">🇩🇪</button>
+                <button data-lang="fr" class="lang-btn-settings">🇫🇷</button>
+                <button data-lang="pt" class="lang-btn-settings">🇵🇹</button>
+                <button data-lang="es" class="lang-btn-settings">🇪🇸</button>
+                <button data-lang="it" class="lang-btn-settings">🇮🇹</button>
+            </div></div>
+            <div class="settings-group"><h4 id="musicSettingsTitle">🎵 МУЗИКА</h4><div class="music-list" id="musicList"></div></div>
+            <div class="settings-group"><h4 id="opacitySettingsTitle">💎 ПРОЗОРІСТЬ ПАНЕЛІ</h4><input type="range" id="opacitySlider" min="0" max="0.9" step="0.01" value="0" class="opacity-slider"><span id="opacityValue" style="color: var(--neon-cyan);">0%</span></div>
+        </div>
+    </div>
+    <div class="window-tabs">
+        <button id="tabBotBtn" class="active"><span id="tabBotText">🤖 БОТ</span></button>
+        <button id="tabChatBtn"><span id="tabChatText">💬 ЧАТ</span></button>
+        <button id="tabSettingsBtn"><span id="tabSettingsText">⚙️ НАЛАШТУВАННЯ</span></button>
+    </div>
+</div>
+
+<div class="app-container">
+    <div class="glass-panel" id="hudPanel">
+        <div class="top-bar">
+            <div class="logo"><h1>◢ DMYTRO ◣</h1><p>UNBREAKABLE • SOUL • FUTURE</p></div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-btn active" data-page="home" id="tabHomeBtn">▶ HOME</button>
+            <button class="tab-btn" data-page="about" id="tabAboutBtn">▶ PROFILE</button>
+        </div>
+
+        <div id="homePage" class="page active-page">
+            <div class="hero-section">
+                <div class="personal-greeting" id="greetingText">> СИСТЕМА ОНЛАЙН // ДМИТРО_АКТИВНИЙ</div>
+                <h2 id="heroTitle">ЗА НЕОНОМ ХОВАЄТЬСЯ ДУША.<br>ПІДТРИМАЙ ЖИТТЯ З УКРАЇНИ.</h2>
+                <div class="hero-sub" id="heroSub">Світ мріє про зірки, а ми мріємо про тихий світанок.</div>
+            </div>
+            <div class="glass-card">
+                <div class="story-text" id="storyText"></div>
+                <div class="story-quote" id="storyQuote" style="margin-top: 1rem;">✦ ТВОЄ СВІТЛО МОЖЕ РОЗВІЯТИ ЧИЮСЬ ТЕМРЯВУ ✦</div>
+            </div>
+        </div>
+
+        <div id="aboutPage" class="page">
+            <div class="glass-card">
+                <div class="frame-content">
+                    <video preload="metadata" id="cardVideo" class="media-element" loop muted playsinline>
+                        <source src="card_clip.mp4" type="video/mp4">
+                    </video>
+                    <div class="text-content"><p id="aboutText"></p></div>
+                </div>
+            </div>
+
+            <section id="site-info-section" class="hud-frame-custom">
+                <div class="frame-inner-content">
+                    <h2 class="neon-glitch-title" id="infoTitle">PROJECT: NEURAL CORE</h2>
+                    <div class="description-body">
+                        <p id="infoDesc1">Ласкаво просимо в цифрову екосистему, створену на стику людської уяви та потужності штучного інтелекту.</p>
+                        <p><strong id="infoLogicLabel">Архітектура та Логіка:</strong> <span id="infoLogicText">Весь програмний код спроєктований за допомогою нейромережі DeepSeek.</span></p>
+                        <p><strong id="infoDesignLabel">Дизайн та HUD-інтерфейс:</strong> <span id="infoDesignText">Візуальна складова та неонові акценти відточені в ході консультацій із Gemini (Google AI).</span></p>
+                    </div>
+                    <div class="social-glass-grid">
+                        <a href="https://www.facebook.com/profile.php?id=100080643259404" target="_blank" class="glass-icon-btn">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.instagram.com/dmitrih31?igsh=MW5wYXh6YnUwaTQ2cw==" target="_blank" class="glass-icon-btn">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <div class="photo-grid" id="photoGrid">
+                <div class="photo-card"><img src="foto1.webp" alt="Photo 1" loading="lazy"></div>
+                <div class="photo-card"><img src="foto2.webp" alt="Photo 2" loading="lazy"></div>
+                <div class="photo-card"><img src="foto3.webp" alt="Photo 3" loading="lazy"></div>
+                <div class="photo-card"><img src="foto4.webp" alt="Photo 4" loading="lazy"></div>
+                <div class="photo-card"><img src="foto5.webp" alt="Photo 5" loading="lazy"></div>
+                <div class="photo-card"><img src="foto6.webp" alt="Photo 6" loading="lazy"></div>
+                <div class="photo-card"><img src="foto7.webp" alt="Photo 7" loading="lazy"></div>
+                <div class="photo-card"><img src="foto8.webp" alt="Photo 8" loading="lazy"></div>
+            </div>
+        </div>
+
+        <div class="donate-wrapper"><a href="https://destream.net/live/kostiukevych31/donate" target="_blank" class="donate-button" id="donateBtn">⟁ ПІДТРИМАТИ МЕНЕ</a></div>
+        <footer>✧ КОЖНЕ СВІТЛО МАЄ ЗНАЧЕННЯ — СТАНЬ ПРОМЕНЕМ ✧</footer>
+    </div>
+</div>
+
+<script>
+    const TRACKS = [
+        { name: "TRACK 01", file: "track1.mp3" },
+        { name: "TRACK 02", file: "track2.mp3" },
+        { name: "TRACK 03", file: "track3.mp3" },
+        { name: "TRACK 04", file: "track4.mp3" },
+        { name: "TRACK 05", file: "track5.mp3" }
+    ];
+    
+    const BG_IMAGES = [
+        "foto1.webp", "foto2.webp", "foto3.webp", "foto4.webp",
+        "foto5.webp", "foto6.webp", "foto7.webp", "foto8.webp"
+    ];
+    
+    const DONATE_URL = "https://destream.net/live/kostiukevych31/donate";
+    const FORMBOLD_URL = "https://formbold.com/s/oyA5r";
+
+    let currentAudio = null;
+    let currentTrackIndex = 0;
+    let isMusicPlaying = false;
+    let musicStarted = false;
+    let bgInterval;
+    let colorInterval;
+
+    function playTrack(idx) { 
+        if(currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+        try {
+            currentAudio = new Audio(TRACKS[idx].file);
+            currentAudio.loop = false;
+            currentAudio.volume = 0.3;
+            currentAudio.play().then(() => {
+                isMusicPlaying = true;
+                musicStarted = true;
+            }).catch(e => console.log("Audio play error:", e));
+            currentTrackIndex = idx;
+            updateMusicButtons();
+            currentAudio.addEventListener('ended', () => {
+                playTrack((currentTrackIndex + 1) % TRACKS.length);
+            });
+        } catch(e) {
+            console.log("Audio error:", e);
+        }
+    }
+    
+    function startMusicOnInteraction() {
+        if(!musicStarted) {
+            playTrack(0);
+        }
+    }
+    
+    document.addEventListener('click', startMusicOnInteraction);
+    document.addEventListener('touchstart', startMusicOnInteraction);
+    document.addEventListener('keydown', startMusicOnInteraction);
+    
+    function updateMusicButtons() { 
+        document.querySelectorAll(".music-track-btn").forEach((btn, i) => { 
+            if(i === currentTrackIndex && isMusicPlaying) {
+                btn.classList.add("active-track");
+            } else {
+                btn.classList.remove("active-track");
+            }
+        }); 
+    }
+    
+    function renderMusicList() { 
+        const list = document.getElementById("musicList"); 
+        if(!list) return; 
+        list.innerHTML = ""; 
+        TRACKS.forEach((t, i) => { 
+            const btn = document.createElement("button"); 
+            btn.className = "music-track-btn"; 
+            btn.innerText = t.name; 
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                playTrack(i);
+            }; 
+            list.appendChild(btn); 
+        }); 
+    }
+
+    let currentBgIndex = 0;
+    function setBackground(i) { 
+        document.body.style.backgroundImage = `url('${BG_IMAGES[i]}')`;
+        document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundPosition = "center";
+        document.body.style.backgroundAttachment = "fixed";
+    }
+    
+    function nextBackground() { 
+        currentBgIndex = (currentBgIndex + 1) % BG_IMAGES.length; 
+        setBackground(currentBgIndex); 
+    }
+    
+    setBackground(0);
+    bgInterval = setInterval(nextBackground, 7000);
+
+    const themeKeys = ["azure", "emerald", "amber", "rose", "violet", "cyan", "lime", "orange", "pink", "purple"];
+    const neonThemes = {
+        azure: "#00f2ff", emerald: "#0f6", amber: "#fa0", rose: "#f6f",
+        violet: "#c6f", cyan: "#0ff", lime: "#9f0", orange: "#f90",
+        pink: "#ff69b4", purple: "#a0f"
+    };
+    let currentThemeIndex = 0;
+    
+    function applyTheme(i) { 
+        const c = neonThemes[themeKeys[i]]; 
+        if(!c) return; 
+        document.documentElement.style.setProperty("--neon-cyan", c); 
+        document.documentElement.style.setProperty("--neon-glow", `${c}66`); 
+        document.documentElement.style.setProperty("--glass-border-strong", `${c}99`);
+        document.documentElement.style.setProperty("--glass-border", `${c}55`);
+    }
+    
+    function nextTheme() { 
+        currentThemeIndex = (currentThemeIndex + 1) % themeKeys.length; 
+        applyTheme(currentThemeIndex); 
+    }
+    
+    applyTheme(0);
+    colorInterval = setInterval(nextTheme, 1000);
+
+    const opacitySlider = document.getElementById("opacitySlider");
+    const opacityValue = document.getElementById("opacityValue");
+    
+    if(opacitySlider) {
+        opacitySlider.addEventListener("input", (e) => { 
+            const v = parseFloat(e.target.value); 
+            document.documentElement.style.setProperty("--glass-opacity", v); 
+            if(opacityValue) opacityValue.innerText = Math.round(v * 100) + "%"; 
+        });
+    }
+
+    async function sendToFormbold(email, message, sender = "User") { 
+        const status = document.getElementById("chatStatus"); 
+        if(status) status.innerHTML = "📡 Відправка..."; 
+        try { 
+            const resp = await fetch(FORMBOLD_URL, {
+                method: "POST", 
+                headers: {"Content-Type": "application/json"}, 
+                body: JSON.stringify({email, message, sender, timestamp: new Date().toLocaleString()})
+            }); 
+            if(resp.ok) { 
+                if(status) { 
+                    status.innerHTML = "<span style='color:#0f0;'>✅ Повідомлення доставлено! Дмитро зв'яжеться з вами.</span>"; 
+                    setTimeout(() => { if(status) status.innerHTML = ""; }, 4000); 
+                } 
+                return true; 
+            } 
+        } catch(e) { 
+            if(status) status.innerHTML = "<span style='color:#f00;'>❌ Помилка мережі</span>"; 
+        } 
+        return false; 
+    }
+    
+    async function sendChatMessage() { 
+        const email = document.getElementById("userEmail").value.trim(); 
+        const msg = document.getElementById("userMessage").value.trim(); 
+        if(!email) { 
+            document.getElementById("chatStatus").innerHTML = "<span style='color:#ff0;'>⚠️ Вкажіть Email для відповіді!</span>"; 
+            return; 
+        } 
+        if(!msg) { 
+            document.getElementById("chatStatus").innerHTML = "<span style='color:#ff0;'>⚠️ Введіть повідомлення!</span>"; 
+            return; 
+        } 
+        const ok = await sendToFormbold(email, msg, "Чат"); 
+        if(ok) document.getElementById("userMessage").value = ""; 
+    }
+
+    let currentLang = "uk";
+    let botState = "start";
+    
+    const botTexts = {
+        uk: {
+            start: "Привіт, мене звати Віїзі. Дякую, що завітав сюди.<br><br>Я — маленький голос Дмитра в цьому неоновому світі.<br><br>Якщо тобі відгукнулася його історія або просто захотілося залишити маленький слід доброти — ти можеш підтримати його невеликим донатом.<br><br>Навіть символічна сума — це світло, яке допомагає йому рухатися далі.<br><br>Твоя увага вже багато значить. Дякую, що ти тут. 💛",
+            donate_yes: "Дякую за твою доброту. Зараз відкрию сторінку підтримки.",
+            donate_no: "Це абсолютно нормально. Дякую, що завітав.<br><br>Якщо захочеш повернутися — я завжди тут.",
+            ask_wish: "Розумію, інколи рішення бувають непростими.<br><br>Хочеш просто залишити побажання Дмитру?",
+            ask_email: "Будь ласка, вкажіть ваш Email, щоб Дмитро міг відповісти на ваше побажання:",
+            wish_yes: "Чудово, напиши своє побажання та Email — я передам його Дмитру.",
+            wish_no: "Добре. Дякую, що приділив час. Якщо захочеш — я завжди поруч.",
+            wish_thanks: "Дякую за твоє побажання! 💛<br><br>Дмитро обов'язково зв'яжеться з вами за вказаним Email.",
+            answers: {yes: "Так", no: "Ні", dont_know: "Не знаю", close: "Закрити"}
+        },
+        en: {
+            start: "Hello, my name is Wiizi. Thank you for stopping by.<br><br>I am Dmytro's little voice in this neon world.<br><br>If his story resonated with you or you just want to leave a small trace of kindness — you can support him with a small donation.<br><br>Even a symbolic amount is light that helps him move forward.<br><br>Your attention already means a lot. Thank you for being here. 💛",
+            donate_yes: "Thank you for your kindness. I will now open the support page.",
+            donate_no: "That's absolutely fine. Thank you for stopping by.<br><br>If you want to come back — I'm always here.",
+            ask_wish: "I understand, decisions can be difficult.<br><br>Do you just want to leave a wish for Dmytro?",
+            ask_email: "Please provide your email so Dmytro can respond to your wish:",
+            wish_yes: "Great, write your wish and email — I will pass it to Dmytro.",
+            wish_no: "Okay. Thank you for your time. If you want — I'm always here.",
+            wish_thanks: "Thank you for your wish! 💛<br><br>Dmytro will contact you at the provided email.",
+            answers: {yes: "Yes", no: "No", dont_know: "Don't know", close: "Close"}
+        },
+        de: {
+            start: "Hallo, mein Name ist Wiizi. Danke für deinen Besuch.<br><br>Ich bin Dmitros kleine Stimme in dieser Neon-Welt.<br><br>Wenn dich seine Geschichte berührt hat oder du einfach eine kleine Spur der Freundlichkeit hinterlassen möchtest, kannst du ihn mit einer kleinen Spende unterstützen.<br><br>Selbst ein symbolischer Betrag ist Licht, das ihm hilft, weiterzugehen.<br><br>Deine Aufmerksamkeit bedeutet schon viel. Danke, dass du da bist. 💛",
+            donate_yes: "Danke für deine Freundlichkeit. Ich öffne jetzt die Unterstützungsseite.",
+            donate_no: "Das ist völlig in Ordnung. Danke für deinen Besuch.<br><br>Wenn du zurückkommen möchtest, bin ich immer hier.",
+            ask_wish: "Ich verstehe, Entscheidungen können schwierig sein.<br><br>Möchtest du einfach einen Wunsch für Dmytro hinterlassen?",
+            ask_email: "Bitte gib deine E-Mail-Adresse an, damit Dmytro auf deinen Wunsch antworten kann:",
+            wish_yes: "Großartig, schreibe deinen Wunsch und deine E-Mail — ich werde ihn Dmytro weiterleiten.",
+            wish_no: "Okay. Danke für deine Zeit. Wenn du möchtest, bin ich immer hier.",
+            wish_thanks: "Danke für deinen Wunsch! 💛<br><br>Dmytro wird dich unter der angegebenen E-Mail kontaktieren.",
+            answers: {yes: "Ja", no: "Nein", dont_know: "Weiß nicht", close: "Schließen"}
+        },
+        fr: {
+            start: "Bonjour, je m'appelle Wiizi. Merci de votre visite.<br><br>Je suis la petite voix de Dmytro dans ce monde néon.<br><br>Si son histoire vous a touché ou si vous souhaitez simplement laisser une petite trace de gentillesse, vous pouvez le soutenir par un petit don.<br><br>Même un montant symbolique est une lumière qui l'aide à avancer.<br><br>Votre attention compte déjà beaucoup. Merci d'être là. 💛",
+            donate_yes: "Merci pour votre gentillesse. Je vais ouvrir la page de soutien.",
+            donate_no: "C'est tout à fait normal. Merci de votre visite.<br><br>Si vous voulez revenir, je suis toujours là.",
+            ask_wish: "Je comprends, les décisions peuvent être difficiles.<br><br>Souhaitez-vous simplement laisser un vœu pour Dmytro?",
+            ask_email: "Veuillez indiquer votre email pour que Dmytro puisse répondre à votre vœu:",
+            wish_yes: "Super, écrivez votre vœu et votre email — je le transmettrai à Dmytro.",
+            wish_no: "D'accord. Merci pour votre temps. Si vous voulez, je suis toujours là.",
+            wish_thanks: "Merci pour votre vœu! 💛<br><br>Dmytro vous contactera à l'email fourni.",
+            answers: {yes: "Oui", no: "Non", dont_know: "Je ne sais pas", close: "Fermer"}
+        },
+        pt: {
+            start: "Olá, meu nome é Wiizi. Obrigado pela visita.<br><br>Sou a pequena voz de Dmytro neste mundo neon.<br><br>Se a história dele ressoou com você ou você só quer deixar um pequeno traço de bondade, você pode apoiá-lo com uma pequena doação.<br><br>Mesmo um valor simbólico é luz que o ajuda a seguir em frente.<br><br>Sua atenção já significa muito. Obrigado por estar aqui. 💛",
+            donate_yes: "Obrigado pela sua gentileza. Vou abrir a página de apoio.",
+            donate_no: "Isso é completamente normal. Obrigado pela visita.<br><br>Se quiser voltar, estou sempre aqui.",
+            ask_wish: "Entendo, decisões podem ser difíceis.<br><br>Você quer apenas deixar um desejo para Dmytro?",
+            ask_email: "Por favor, forneça seu email para que Dmytro possa responder ao seu desejo:",
+            wish_yes: "Ótimo, escreva seu desejo e email — vou passá-lo para Dmytro.",
+            wish_no: "Ok. Obrigado pelo seu tempo. Se quiser, estou sempre aqui.",
+            wish_thanks: "Obrigado pelo seu desejo! 💛<br><br>Dmytro entrará em contato com você pelo email fornecido.",
+            answers: {yes: "Sim", no: "Não", dont_know: "Não sei", close: "Fechar"}
+        },
+        es: {
+            start: "Hola, me llamo Wiizi. Gracias por visitar.<br><br>Soy la pequeña voz de Dmytro en este mundo neón.<br><br>Si su historia resonó contigo o solo quieres dejar un pequeño rastro de bondad, puedes apoyarlo con una pequeña donación.<br><br>Incluso una cantidad simbólica es luz que lo ayuda a seguir adelante.<br><br>Tu atención ya significa mucho. Gracias por estar aquí. 💛",
+            donate_yes: "Gracias por tu amabilidad. Ahora abriré la página de apoyo.",
+            donate_no: "Eso está completamente bien. Gracias por visitar.<br><br>Si quieres volver, siempre estoy aquí.",
+            ask_wish: "Entiendo, las decisiones pueden ser difíciles.<br><br>¿Solo quieres dejar un deseo para Dmytro?",
+            ask_email: "Por favor, proporcione su email para que Dmytro pueda responder a su deseo:",
+            wish_yes: "Genial, escribe tu deseo y email — se lo pasaré a Dmytro.",
+            wish_no: "Ok. Gracias por tu tiempo. Si quieres, siempre estoy aquí.",
+            wish_thanks: "¡Gracias por tu deseo! 💛<br><br>Dmytro se comunicará contigo en el email proporcionado.",
+            answers: {yes: "Sí", no: "No", dont_know: "No sé", close: "Cerrar"}
+        },
+        it: {
+            start: "Ciao, mi chiamo Wiizi. Grazie per essere passato.<br><br>Sono la piccola voce di Dmytro in questo mondo neon.<br><br>Se la sua storia ti ha colpito o vuoi semplicemente lasciare una piccola traccia di gentilezza, puoi sostenerlo con una piccola donazione.<br><br>Anche un importo simbolico è luce che lo aiuta ad andare avanti.<br><br>La tua attenzione significa già molto. Grazie di essere qui. 💛",
+            donate_yes: "Grazie per la tua gentilezza. Apro la pagina di supporto.",
+            donate_no: "Va assolutamente bene. Grazie per essere passato.<br><br>Se vuoi tornare, sono sempre qui.",
+            ask_wish: "Capisco, le decisioni possono essere difficili.<br><br>Vuoi solo lasciare un desiderio per Dmytro?",
+            ask_email: "Per favore, fornisci la tua email così Dmytro può rispondere al tuo desiderio:",
+            wish_yes: "Grande, scrivi il tuo desiderio e email — lo passerò a Dmytro.",
+            wish_no: "Ok. Grazie per il tuo tempo. Se vuoi, sono sempre qui.",
+            wish_thanks: "Grazie per il tuo desiderio! 💛<br><br>Dmytro ti contatterà all'email fornita.",
+            answers: {yes: "Sì", no: "No", dont_know: "Non so", close: "Chiudi"}
+        }
+    };
+    
+    function startBot() { 
+        const t = botTexts[currentLang] || botTexts.uk; 
+        botState = "start"; 
+        const botMsg = document.getElementById("botMessage");
+        if(botMsg) botMsg.innerHTML = t.start; 
+        showBotAnswers([t.answers.yes, t.answers.no, t.answers.dont_know]); 
+        const inputArea = document.getElementById("botInputArea");
+        if(inputArea) inputArea.style.display = "none"; 
+    }
+    
+    function showBotAnswers(answers) { 
+        const c = document.getElementById("botAnswers"); 
+        if(!c) return;
+        c.innerHTML = ""; 
+        answers.forEach(a => { 
+            const btn = document.createElement("button"); 
+            btn.className = "bot-answer-btn"; 
+            btn.innerText = a; 
+            btn.onclick = () => handleBotAnswer(a); 
+            c.appendChild(btn); 
+        }); 
+    }
+    
+    function handleBotAnswer(a) { 
+        const t = botTexts[currentLang] || botTexts.uk; 
+        if(botState === "start") { 
+            if(a === t.answers.yes) { 
+                botState = "ask_donate"; 
+                document.getElementById("botMessage").innerHTML = t.donate_yes; 
+                showBotAnswers([]); 
+                setTimeout(() => { window.open(DONATE_URL, "_blank"); }, 1500); 
+            } else if(a === t.answers.no) { 
+                botState = "after_no"; 
+                document.getElementById("botMessage").innerHTML = t.donate_no; 
+                showBotAnswers([t.answers.close]); 
+            } else if(a === t.answers.dont_know) { 
+                botState = "ask_wish"; 
+                document.getElementById("botMessage").innerHTML = t.ask_wish; 
+                showBotAnswers([t.answers.yes, t.answers.no]); 
+            } 
+        } else if(botState === "ask_wish") { 
+            if(a === t.answers.yes) { 
+                botState = "ask_email"; 
+                document.getElementById("botMessage").innerHTML = t.ask_email; 
+                showBotAnswers([]); 
+                const inputArea = document.getElementById("botInputArea");
+                if(inputArea) inputArea.style.display = "flex"; 
+            } else if(a === t.answers.no) { 
+                botState = "after_wish_no"; 
+                document.getElementById("botMessage").innerHTML = t.wish_no; 
+                showBotAnswers([t.answers.close]); 
+            } 
+        } else if((botState === "after_no" || botState === "after_wish_no") && a === t.answers.close) { 
+            const windowEl = document.getElementById("glassWindow");
+            if(windowEl) windowEl.classList.remove("active"); 
+        } 
+    }
+    
+    function sendWish() { 
+        const email = document.getElementById("botEmailInput").value.trim(); 
+        const wish = document.getElementById("wishInput").value.trim(); 
+        if(!email) { alert("Будь ласка, вкажіть ваш Email!"); return; } 
+        if(!wish) { alert("Будь ласка, напишіть побажання!"); return; } 
+        const t = botTexts[currentLang] || botTexts.uk; 
+        document.getElementById("botMessage").innerHTML = t.wish_thanks; 
+        showBotAnswers([t.answers.close]); 
+        const inputArea = document.getElementById("botInputArea");
+        if(inputArea) inputArea.style.display = "none"; 
+        sendToFormbold(email, wish, "Побажання від бота"); 
+        const emailInput = document.getElementById("botEmailInput");
+        const wishInput = document.getElementById("wishInput");
+        if(emailInput) emailInput.value = ""; 
+        if(wishInput) wishInput.value = ""; 
+    }
+
+    const uiTranslations = {
+        uk: {
+            greeting: "> СИСТЕМА ОНЛАЙН // ДМИТРО_АКТИВНИЙ",
+            heroTitle: "ЗА НЕОНОМ ХОВАЄТЬСЯ ДУША.<br>ПІДТРИМАЙ ЖИТТЯ З УКРАЇНИ.",
+            heroSub: "Світ мріє про зірки, а ми мріємо про тихий світанок.",
+            storyText: "У ці темні часи навіть маленьке світло стає маяком. Твоя допомога — не просто цифри, це віра, що людяність сильніша за будь-яку зброю.",
+            storyQuote: "✦ ТВОЄ СВІТЛО МОЖЕ РОЗВІЯТИ ЧИЮСЬ ТЕМРЯВУ ✦",
+            donateLabel: "⟁ ПІДТРИМАТИ МЕНЕ",
+            aboutText: "Мене звати Дмитро, і я — українець. Поки світ обговорює технології майбутнього, моя реальність — це спроба зібрати життя по шматочках. Я звичайний цивільний, чиє рідне місто перетворилося на руїни через війну. У ці темні часи кожен промінь вашої підтримки стає для мене маяком надії.",
+            tabHome: "▶ ГОЛОВНА",
+            tabAbout: "▶ ПРО МЕНЕ",
+            infoTitle: "ПРОЄКТ: НЕЙРО-ЯДРО",
+            infoDesc1: "Ласкаво просимо в цифрову екосистему, створену на стику людської уяви та потужності штучного інтелекту.",
+            infoLogicLabel: "Архітектура та Логіка:",
+            infoLogicText: "Весь програмний код спроєктований за допомогою нейромережі DeepSeek.",
+            infoDesignLabel: "Дизайн та HUD-інтерфейс:",
+            infoDesignText: "Візуальна складова та неонові акценти відточені в ході консультацій із Gemini (Google AI).",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 БОТ",
+            tabChat: "💬 ЧАТ",
+            tabSettings: "⚙️ НАЛАШТУВАННЯ",
+            chatEmailLabel: "📧 EMAIL ДЛЯ ВІДПОВІДІ",
+            chatMessageLabel: "💬 ПОВІДОМЛЕННЯ",
+            langTitle: "🌐 МОВА",
+            musicTitle: "🎵 МУЗИКА",
+            opacityTitle: "💎 ПРОЗОРІСТЬ ПАНЕЛІ"
+        },
+        en: {
+            greeting: "> SYSTEM ONLINE // DMYTRO_ACTIVE",
+            heroTitle: "BEYOND THE NEON,<br>A SOUL AWAITS",
+            heroSub: "The world dreams of stars — we dream of a quiet dawn.",
+            storyText: "In these dark times, even a small light becomes a beacon. Your help is not just numbers — it's faith that humanity is stronger than any weapon.",
+            storyQuote: "✦ YOUR LIGHT CAN DISPEL DARKNESS ✦",
+            donateLabel: "⟁ SUPPORT ME",
+            aboutText: "My name is Dmytro, and I am Ukrainian. While the world discusses the technologies of the future, my reality is an attempt to piece life back together. I am an ordinary civilian whose hometown has been reduced to ruins by war.",
+            tabHome: "▶ HOME",
+            tabAbout: "▶ PROFILE",
+            infoTitle: "PROJECT: NEURAL CORE",
+            infoDesc1: "Welcome to the digital ecosystem created at the intersection of human imagination and the power of artificial intelligence.",
+            infoLogicLabel: "Architecture & Logic:",
+            infoLogicText: "The entire code is designed using the DeepSeek neural network.",
+            infoDesignLabel: "Design & HUD Interface:",
+            infoDesignText: "The visual component and neon accents are refined through consultations with Gemini (Google AI).",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 BOT",
+            tabChat: "💬 CHAT",
+            tabSettings: "⚙️ SETTINGS",
+            chatEmailLabel: "📧 EMAIL FOR REPLY",
+            chatMessageLabel: "💬 MESSAGE",
+            langTitle: "🌐 LANGUAGE",
+            musicTitle: "🎵 MUSIC",
+            opacityTitle: "💎 PANEL OPACITY"
+        },
+        de: {
+            greeting: "> SYSTEM ONLINE // DMYTRO_AKTIV",
+            heroTitle: "HINTER DEM NEON<br>VERBIRGT SICH EINE SEELE",
+            heroSub: "Die Welt träumt von Sternen – wir träumen von einer stillen Morgenröte.",
+            storyText: "In diesen dunklen Zeiten wird selbst ein kleines Licht zum Leuchtfeuer. Deine Hilfe ist nicht nur eine Zahl – sie ist der Glaube, dass die Menschheit stärker ist als jede Waffe.",
+            storyQuote: "✦ DEIN LICHT KANN DUNKELHEIT VERTREIBEN ✦",
+            donateLabel: "⟁ UNTERSTÜTZE MICH",
+            aboutText: "Mein Name ist Dmytro, und ich bin Ukrainer. Während die Welt über die Technologien der Zukunft diskutiert, ist meine Realität der Versuch, das Leben Stück für Stück wieder zusammenzusetzen.",
+            tabHome: "▶ START",
+            tabAbout: "▶ PROFIL",
+            infoTitle: "PROJEKT: NEURALER KERN",
+            infoDesc1: "Willkommen im digitalen Ökosystem, das an der Schnittstelle von menschlicher Vorstellungskraft und KI entstanden ist.",
+            infoLogicLabel: "Architektur & Logik:",
+            infoLogicText: "Der gesamte Code wurde mit dem neuronalen Netzwerk DeepSeek entwickelt.",
+            infoDesignLabel: "Design & HUD-Interface:",
+            infoDesignText: "Die visuelle Komponente und Neon-Akzente wurden mit Gemini (Google AI) verfeinert.",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 BOT",
+            tabChat: "💬 CHAT",
+            tabSettings: "⚙️ EINSTELLUNGEN",
+            chatEmailLabel: "📧 E-MAIL FÜR ANTWORT",
+            chatMessageLabel: "💬 NACHRICHT",
+            langTitle: "🌐 SPRACHE",
+            musicTitle: "🎵 MUSIK",
+            opacityTitle: "💎 TRANSPARENZ"
+        },
+        fr: {
+            greeting: "> SYSTÈME EN LIGNE // DMYTRO_ACTIF",
+            heroTitle: "DERRIÈRE LE NÉON,<br>UNE ÂME ATTEND",
+            heroSub: "Le monde rêve d'étoiles — nous rêvons d'une aube silencieuse.",
+            storyText: "En ces temps sombres, même une petite lumière devient un phare. Votre aide n'est pas que des chiffres — c'est la foi que l'humanité est plus forte que toute arme.",
+            storyQuote: "✦ VOTRE LUMIÈRE PEUT DISSIPER LES TÉNÈBRES ✦",
+            donateLabel: "⟁ SOUTENEZ-MOI",
+            aboutText: "Je m'appelle Dmytro, et je suis Ukrainien. Pendant que le monde discute des technologies du futur, ma réalité est une tentative de reconstruire ma vie pièce par pièce.",
+            tabHome: "▶ ACCUEIL",
+            tabAbout: "▶ PROFIL",
+            infoTitle: "PROJET: CŒUR NEURAL",
+            infoDesc1: "Bienvenue dans l'écosystème numérique créé à la croisée de l'imagination humaine et de l'IA.",
+            infoLogicLabel: "Architecture & Logique:",
+            infoLogicText: "L'ensemble du code est conçu à l'aide du réseau neuronal DeepSeek.",
+            infoDesignLabel: "Design & Interface HUD:",
+            infoDesignText: "La composante visuelle et les accents néon ont été affinés avec Gemini (Google AI).",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 BOT",
+            tabChat: "💬 CHAT",
+            tabSettings: "⚙️ PARAMÈTRES",
+            chatEmailLabel: "📧 EMAIL POUR RÉPONSE",
+            chatMessageLabel: "💬 MESSAGE",
+            langTitle: "🌐 LANGUE",
+            musicTitle: "🎵 MUSIQUE",
+            opacityTitle: "💎 OPACITÉ"
+        },
+        pt: {
+            greeting: "> SISTEMA ONLINE // DMYTRO_ATIVO",
+            heroTitle: "ALÉM DO NÉON,<br>UMA ALMA ESPERA",
+            heroSub: "O mundo sonha com estrelas — nós sonhamos com um amanhecer tranquilo.",
+            storyText: "Nestes tempos sombrios, até uma pequena luz se torna um farol. Sua ajuda não são apenas números — é a fé de que a humanidade é mais forte que qualquer arma.",
+            storyQuote: "✦ SUA LUZ PODE DISSIPAR A ESCURIDÃO ✦",
+            donateLabel: "⟁ APOIE-ME",
+            aboutText: "Meu nome é Dmytro, e sou ucraniano. Enquanto o mundo discute as tecnologias do futuro, minha realidade é uma tentativa de juntar a vida pedaço por pedaço.",
+            tabHome: "▶ INÍCIO",
+            tabAbout: "▶ PERFIL",
+            infoTitle: "PROJETO: NÚCLEO NEURAL",
+            infoDesc1: "Bem-vindo ao ecossistema digital criado na interseção da imaginação humana e da IA.",
+            infoLogicLabel: "Arquitetura & Lógica:",
+            infoLogicText: "Todo o código foi projetado usando a rede neural DeepSeek.",
+            infoDesignLabel: "Design & Interface HUD:",
+            infoDesignText: "O componente visual e os acentos neon foram refinados com o Gemini (Google AI).",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 BOT",
+            tabChat: "💬 CHAT",
+            tabSettings: "⚙️ CONFIGURAÇÕES",
+            chatEmailLabel: "📧 EMAIL PARA RESPOSTA",
+            chatMessageLabel: "💬 MENSAGEM",
+            langTitle: "🌐 IDIOMA",
+            musicTitle: "🎵 MÚSICA",
+            opacityTitle: "💎 OPACIDADE"
+        },
+        es: {
+            greeting: "> SISTEMA EN LÍNEA // DMYTRO_ACTIVO",
+            heroTitle: "DETRÁS DEL NEÓN,<br>HAY UN ALMA",
+            heroSub: "El mundo sueña con estrellas — nosotros soñamos con un amanecer tranquilo.",
+            storyText: "En estos tiempos oscuros, incluso una pequeña luz se convierte en un faro. Tu ayuda no son solo números — es la fe de que la humanidad es más fuerte que cualquier arma.",
+            storyQuote: "✦ TU LUZ PUEDE DISIPAR LA OSCURIDAD ✦",
+            donateLabel: "⟁ APÓYAME",
+            aboutText: "Me llamo Dmytro y soy ucraniano. Mientras el mundo discute las tecnologías del futuro, mi realidad es un intento de reconstruir mi vida pieza por pieza.",
+            tabHome: "▶ INICIO",
+            tabAbout: "▶ PERFIL",
+            infoTitle: "PROYECTO: NÚCLEO NEURAL",
+            infoDesc1: "Bienvenido al ecosistema digital creado en la intersección de la imaginación humana y la IA.",
+            infoLogicLabel: "Arquitectura & Lógica:",
+            infoLogicText: "Todo el código está diseñado utilizando la red neuronal DeepSeek.",
+            infoDesignLabel: "Diseño & Interfaz HUD:",
+            infoDesignText: "El componente visual y los acentos neón se perfeccionaron con Gemini (Google AI).",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 BOT",
+            tabChat: "💬 CHAT",
+            tabSettings: "⚙️ AJUSTES",
+            chatEmailLabel: "📧 CORREO PARA RESPUESTA",
+            chatMessageLabel: "💬 MENSAJE",
+            langTitle: "🌐 IDIOMA",
+            musicTitle: "🎵 MÚSICA",
+            opacityTitle: "💎 OPACIDAD"
+        },
+        it: {
+            greeting: "> SISTEMA ONLINE // DMYTRO_ATTIVO",
+            heroTitle: "DIETRO IL NEON,<br>UN'ANIMA ATTENDE",
+            heroSub: "Il mondo sogna le stelle — noi sogniamo un'alba silenziosa.",
+            storyText: "In questi tempi bui, anche una piccola luce diventa un faro. Il tuo aiuto non sono solo numeri — è la fede che l'umanità è più forte di qualsiasi arma.",
+            storyQuote: "✦ LA TUA LUCE PUÒ DISPERDERE L'OSCURITÀ ✦",
+            donateLabel: "⟁ SUPPORTAMI",
+            aboutText: "Mi chiamo Dmytro e sono ucraino. Mentre il mondo discute le tecnologie del futuro, la mia realtà è un tentativo di ricostruire la vita pezzo per pezzo. Sono un civile comune la cui città natale è stata ridotta in rovina dalla guerra.",
+            tabHome: "▶ HOME",
+            tabAbout: "▶ PROFILO",
+            infoTitle: "PROGETTO: NUCLEO NEURALE",
+            infoDesc1: "Benvenuto nell'ecosistema digitale creato all'intersezione tra immaginazione umana e potenza dell'intelligenza artificiale.",
+            infoLogicLabel: "Architettura & Logica:",
+            infoLogicText: "L'intero codice è progettato utilizzando la rete neurale DeepSeek.",
+            infoDesignLabel: "Design & Interfaccia HUD:",
+            infoDesignText: "La componente visiva e gli accenti neon sono stati perfezionati con Gemini (Google AI).",
+            windowHeader: "🧠 HUD INTERFACE",
+            tabBot: "🤖 BOT",
+            tabChat: "💬 CHAT",
+            tabSettings: "⚙️ IMPOSTAZIONI",
+            chatEmailLabel: "📧 EMAIL PER RISPOSTA",
+            chatMessageLabel: "💬 MESSAGGIO",
+            langTitle: "🌐 LINGUA",
+            musicTitle: "🎵 MUSICA",
+            opacityTitle: "💎 OPACITÀ"
+        }
+    };
+    
+    function updateUILanguage(lang) {
+        currentLang = lang;
+        const t = uiTranslations[lang] || uiTranslations.uk;
+        
+        const elements = {
+            greetingText: t.greeting,
+            heroTitle: t.heroTitle,
+            heroSub: t.heroSub,
+            storyText: t.storyText,
+            storyQuote: t.storyQuote,
+            donateBtn: t.donateLabel,
+            aboutText: t.aboutText,
+            tabHomeBtn: t.tabHome,
+            tabAboutBtn: t.tabAbout,
+            infoTitle: t.infoTitle,
+            infoDesc1: t.infoDesc1,
+            infoLogicLabel: t.infoLogicLabel,
+            infoLogicText: t.infoLogicText,
+            infoDesignLabel: t.infoDesignLabel,
+            infoDesignText: t.infoDesignText,
+            windowHeaderText: t.windowHeader,
+            tabBotText: t.tabBot,
+            tabChatText: t.tabChat,
+            tabSettingsText: t.tabSettings,
+            chatEmailLabel: t.chatEmailLabel,
+            chatMessageLabel: t.chatMessageLabel,
+            langSettingsTitle: t.langTitle,
+            musicSettingsTitle: t.musicTitle,
+            opacitySettingsTitle: t.opacityTitle
+        };
+        
+        for(const [id, text] of Object.entries(elements)) {
+            const el = document.getElementById(id);
+            if(el) el.innerHTML = text;
+        }
+        
+        document.querySelectorAll(".lang-btn-settings").forEach(btn => {
+            if(btn.dataset.lang === lang) btn.classList.add("active");
+            else btn.classList.remove("active");
+        });
+        
+        startBot();
+    }
+
+    const glassWindow = document.getElementById("glassWindow");
+    const openBtn = document.getElementById("openWindowBtn");
+    const closeBtn = document.getElementById("closeWindowBtn");
+    
+    function openWindow() { 
+        if(glassWindow) glassWindow.classList.add("active"); 
+        startBot();
+        const botVideo = document.getElementById("botVideo");
+        if(botVideo) botVideo.play().catch(e => console.log("Bot video error:", e));
+    }
+    
+    function closeWindow() { 
+        if(glassWindow) glassWindow.classList.remove("active"); 
+    }
+    
+    if(openBtn) openBtn.addEventListener("click", openWindow);
+    if(closeBtn) closeBtn.addEventListener("click", closeWindow);
+
+    function switchTab(tabId, btnElement = null) { 
+        document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active")); 
+        const activeTab = document.getElementById(tabId);
+        if(activeTab) activeTab.classList.add("active"); 
+        document.querySelectorAll(".window-tabs button").forEach(btn => btn.classList.remove("active")); 
+        if(btnElement) btnElement.classList.add("active"); 
+    }
+    
+    const tabBotBtn = document.getElementById("tabBotBtn");
+    const tabChatBtn = document.getElementById("tabChatBtn");
+    const tabSettingsBtn = document.getElementById("tabSettingsBtn");
+    
+    if(tabBotBtn) tabBotBtn.addEventListener("click", (e) => switchTab("botTab", e.currentTarget));
+    if(tabChatBtn) tabChatBtn.addEventListener("click", (e) => switchTab("chatTab", e.currentTarget));
+    if(tabSettingsBtn) tabSettingsBtn.addEventListener("click", (e) => switchTab("settingsTab", e.currentTarget));
+    
+    document.querySelectorAll(".lang-btn-settings").forEach(btn => { 
+        btn.addEventListener("click", () => updateUILanguage(btn.dataset.lang)); 
+    });
+    
+    const sendChatBtn = document.getElementById("sendChatBtn");
+    const sendWishBtn = document.getElementById("sendWishBtn");
+    const userMessage = document.getElementById("userMessage");
+    const wishInput = document.getElementById("wishInput");
+    
+    if(sendChatBtn) sendChatBtn.addEventListener("click", sendChatMessage);
+    if(sendWishBtn) sendWishBtn.addEventListener("click", sendWish);
+    if(userMessage) userMessage.addEventListener("keypress", (e) => { if(e.key === "Enter") sendChatMessage(); });
+    if(wishInput) wishInput.addEventListener("keypress", (e) => { if(e.key === "Enter") sendWish(); });
+
+    const tabsMain = document.querySelectorAll(".tab-btn");
+    const homePage = document.getElementById("homePage");
+    const aboutPage = document.getElementById("aboutPage");
+    
+    tabsMain.forEach(tab => { 
+        tab.addEventListener("click", () => { 
+            tabsMain.forEach(t => t.classList.remove("active")); 
+            tab.classList.add("active"); 
+            if(tab.dataset.page === "home") { 
+                if(homePage) homePage.classList.add("active-page"); 
+                if(aboutPage) aboutPage.classList.remove("active-page"); 
+            } else { 
+                if(aboutPage) aboutPage.classList.add("active-page"); 
+                if(homePage) homePage.classList.remove("active-page"); 
+                const cardVideo = document.getElementById("cardVideo"); 
+                if(cardVideo) cardVideo.play().catch(() => {});
+            } 
+        }); 
+    });
+
+    renderMusicList(); 
+    updateUILanguage("uk"); 
+    if(glassWindow) glassWindow.classList.remove("active");
+</script>
+</body>
+</html>
